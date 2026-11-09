@@ -1,3 +1,4 @@
+#define MG_ENABLE_HTTP 1
 #include "mongoose.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,11 +25,11 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
         struct mg_http_message *hm = (struct mg_http_message *) ev_data;
 
         // GET /
-        if (mg_match_uri(hm, "/")) {
+        if (mg_match(hm->uri, mg_str("/"), NULL)) {
             mg_http_reply(c, 200, "Content-Type: application/json\r\n", "{\"message\": \"CS121 API is running\"}\n");
         }
         // GET /students
-        else if (mg_match_uri(hm, "/students") && mg_vcasecmp(&hm->method, "GET") == 0) {
+        else if (mg_match(hm->uri, mg_str("/students"), NULL) && mg_vcasecmp(&hm->method, "GET") == 0) {
             char buf[4096] = "[";
             for (int i = 0; i < student_count; i++) {
                 char item[256];
@@ -40,7 +41,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
             mg_http_reply(c, 200, "Content-Type: application/json\r\n", "%s", buf);
         }
         // POST /students
-        else if (mg_match_uri(hm, "/students") && mg_vcasecmp(&hm->method, "POST") == 0) {
+        else if (mg_match(hm->uri, mg_str("/students"), NULL) && mg_vcasecmp(&hm->method, "POST") == 0) {
             char name[100] = {0};
             mg_json_get_str(hm->body, "$.name", name, sizeof(name));
 
@@ -57,7 +58,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
                           "{\"id\": %d, \"name\": \"%s\"}\n", students[student_count - 1].id, students[student_count - 1].name);
         }
         // GET /students/:id , PUT /students/:id , DELETE /students/:id
-        else if (mg_match_uri(hm, "/students/*")) {
+        else if (mg_match(hm->uri, mg_str("/students/*"), NULL)) {
             int target_id = atoi(hm->uri.buf + 10);
             int found_idx = -1;
 
