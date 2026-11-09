@@ -1,7 +1,7 @@
 FROM gcc:latest AS builder
 WORKDIR /app
 COPY . .
-RUN gcc -O2 main.c mongoose.c -o server
+RUN gcc -O2 main.c mongoose.c -o server -lpthread -ldl
 
 FROM debian:bookworm-slim
 WORKDIR /app
